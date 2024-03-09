@@ -1,5 +1,5 @@
 # UniversalMagnaSirgas
-Herramientas backend para transformación universal de coordenadas para todos los sistemas coordenados de referencia Colombianos
+Herramientas backend para transformación universal de coordenadas para todos los sistemas coordenados de referencia Colombianos.
 
 # Dual Licensing Approach for ESPÆCIAL's Coordinate Transformation Tools
 This repository provides open-source coordinate transformation tools developed by ESPÆCIAL. We believe in making these tools accessible to everyone, while also offering a commercial licensing option for organizations seeking additional benefits.
