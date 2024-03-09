@@ -16,9 +16,9 @@ We offer two licensing options for these coordinate transformation tools:
 The appropriate license for you depends on the nature and scope of your project:
 1. Small Projects or Individual Use: If you are working on a small project or using the tools for personal use, the MIT License is the most suitable option.
 2. Commercial Projects: For larger organizations or projects with commercial intent, we recommend considering the Commercial License Agreement. It offers benefits such as:
-  - Access to additional support services.
-  - Potential customization options for the tools.
-  - Defined terms for commercial use and attribution.
+   - Access to additional support services.
+   - Potential customization options for the tools.
+   - Defined terms for commercial use and attribution.
 
 ## How to Apply a License:
 
