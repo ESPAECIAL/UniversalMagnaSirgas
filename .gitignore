@@ -1,0 +1,4 @@
+*.gpkg
+*.java
+*.pyc
+magna-sirgas/__pycache__/
