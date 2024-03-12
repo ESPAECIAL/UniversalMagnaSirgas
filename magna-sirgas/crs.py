@@ -1,10 +1,7 @@
-from abc import ABC, abstractmethod, abstractclassmethod, property
+from abc import ABC, abstractclassmethod
 
 class MagnaSirgasCRS(ABC):
     @abstractclassmethod
-    def type(cls):
-        pass
-    @classmethod
     def crs(self):
         pass
     @abstractclassmethod
@@ -18,9 +15,6 @@ class MagnaSirgasCRS(ABC):
         pass
     @abstractclassmethod
     def min_west(self):
-        pass
-    @abstractclassmethod
-    def crs(self):
         pass
     def __repr__(self) -> str:
         return f"MagnaSirgasCRS()"
