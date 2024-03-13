@@ -20,7 +20,7 @@ class Projecter(SimpleAdapter):
         print("Projection between %s and %s coordinates" % self.COORDINATE_TYPES)
     
     def get_results(self):
-            return self.results
+        return self.results
     
     def projects_geographic_to_projected(self, coords):
         self.organizes_coordinatetype_pipeline(proj_to_geog=False)
@@ -33,7 +33,6 @@ class Projecter(SimpleAdapter):
         self._differentiates_input_patterns(coords, True)
     
     def _differentiates_input_patterns(self, coords, inverse):
-        np.array()
         match coords:
             case (float(east), float(north)) if self._validates_boundaried_single_paired_coordinates(east, north):
                 self.results = self.proj(coords, inverse=inverse)
