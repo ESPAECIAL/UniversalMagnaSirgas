@@ -7,11 +7,11 @@ class Projected(MagnaSirgasCRS):
 class EPSG21897(Projected):
     """The ranges of this must be adjusted
     """
-    _crs    = CRS.from_user_input(21897)
-    _max_north  = 1069428.8
-    _min_south  = 1060687.5
-    _max_east   = 969767.3
-    _min_west   = 961277.5
+    _crs        = CRS.from_user_input(21897)
+    _max_north  = 1799074.0
+    _min_south  = 213804.0
+    _max_east   = 1163585.2414666042
+    _min_west   = 832143.631295867
 
     def __init__(self):
         pass
