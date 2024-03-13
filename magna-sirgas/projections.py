@@ -63,6 +63,11 @@ class Projecter(SimpleAdapter):
                 coords          = coords.transpose()
                 self.results    = self.proj(tuple(coords[0]), tuple(coords[1]), inverse=inverse)
 
+            case ((float(), float()), *_ , (float(), float())) if isinstance(coords, tuple) and not self._validates_is_always_bidimensional(coords):
+                self.results    = None
+                error_message   = f"Coordinates do not come always paired"
+                ## Write method to make the user know where are the not well paired coordinates
+
             case ((float(), float()), *_ , (float(), float())) if isinstance(coords, tuple) and not self._validates_tuple_as_float_container(coords):
                 self.results    = None
                 error_message   = f"The coordinates are not all floats"
