@@ -19,26 +19,25 @@ class Projecter(SimpleAdapter):
             self._origin_target_log(crs1, crs2)
         print("Projection between %s and %s coordinates" % self.COORDINATE_TYPES)
     
-    def _origin_target_arenot_projectable_log(self, crs1, crs2):
-        return logging.error(f"The crs' {crs1, crs2} dont create a pipeline to project")
+    def get_results(self):
+            return self.results
     
-    def validates_coordinate_types(self, crs1, crs2):
-        if isinstance(crs1, Ellipsoidal) and isinstance(crs2, Projected): return True
-        if isinstance(crs1, Projected) and isinstance(crs2, Ellipsoidal): return True
-        self._origin_target_arenot_projectable_log(crs1, crs2)
+    def projects_geographic_to_projected(self, coords):
+        self.organizes_coordinatetype_pipeline(proj_to_geog=False)
+        self.proj   = Proj(self.crs1._crs(), ellps=self.crs2.name_from_proj())
+        self._differentiates_input_patterns(coords, False)
     
-    def organizes_coordinatetype_pipeline(self, proj_to_geog: bool):
-        if isinstance(self.crs1, Ellipsoidal) and isinstance(self.crs2, Projected) and proj_to_geog: self.exchanges_crs()
-        if isinstance(self.crs1, Projected) and isinstance(self.crs2, Ellipsoidal) and not proj_to_geog: self.exchanges_crs()
-
+    def projects_projected_to_geographic(self, coords):
+        self.organizes_coordinatetype_pipeline(proj_to_geog=True)
+        self.proj   = Proj(self.crs1._crs, ellps=self.crs2.name_from_proj())
+        self._differentiates_input_patterns(coords, True)
+    
     def _differentiates_input_patterns(self, coords, inverse):
+        np.array()
         match coords:
-            case (float(x), float(y)) if (x >= self.crs1.MINIMUM_X and x < self.crs1.MAXIMUM_X) \
-                and (y >= self.crs1.MINIMUM_Y and y < self.crs1.MAXIMUM_Y):
+            case (float(east), float(north)) if self._validates_boundaried_single_paired_coordinates(east, north):
                 self.results = self.proj(coords, inverse=inverse)
-            case ((float(), float()), *_ , (float(), float())) if isinstance(coords, tuple) and \
-                np.array(coords).shape[self.COL_ARRAY] == self.COORDS_2D and \
-                    (np.array(coords).dtype == self.DTYPE_64 or np.array(coords).dtype == self.DTYPE_32):
+            case ((float(), float()), *_ , (float(), float())) if isinstance(coords, tuple) and self._validates_2d_tuple(coords):
                 coords  = np.array(coords)
                 coords  = coords.transpose()
                 self.results = self.proj(tuple(coords[0]), tuple(coords[1]), inverse=inverse)
@@ -46,20 +45,44 @@ class Projecter(SimpleAdapter):
                 # This should be corrected to add the real ranges of EPSG21897
                 logging.error(f"Invalid coordinates: {coords}. They should be in a tuple of floats (x, y) or in a type readable for numpy.array() and within the range")
 
-    def projects_projected_to_geographic(self, coords):
-        self.organizes_coordinatetype_pipeline(proj_to_geog=True)
-        self.proj   = Proj(self.crs1._crs, ellps=self.crs2.name_from_proj())
-        self._differentiates_input_patterns(coords, True)
-    
-    def projects_geographic_to_projected(self, coords):
-        self.organizes_coordinatetype_pipeline(proj_to_geog=False)
-        self.proj   = Proj(self.crs1._crs(), ellps=self.crs2.name_from_proj())
-        self._differentiates_input_patterns(coords, False)
-    
-    def get_results(self):
-        return self.results
+    def organizes_coordinatetype_pipeline(self, proj_to_geog: bool):
+        if isinstance(self.crs1, Ellipsoidal) and isinstance(self.crs2, Projected) and proj_to_geog: self.exchanges_crs()
+        if isinstance(self.crs1, Projected) and isinstance(self.crs2, Ellipsoidal) and not proj_to_geog: self.exchanges_crs()
 
+    def validates_coordinate_types(self, crs1, crs2):
+        if isinstance(crs1, Ellipsoidal) and isinstance(crs2, Projected): return True
+        if isinstance(crs1, Projected) and isinstance(crs2, Ellipsoidal): return True
+        self._origin_target_arenot_projectable_log(crs1, crs2)
+    
+    def _origin_target_arenot_projectable_log(self, crs1, crs2):
+        return logging.error(f"The crs' {crs1, crs2} dont create a pipeline to project")
+
+    def _validates_boundaried_single_paired_coordinates(self, e, n):
+        e_is_well_boundaried = (e >= self.crs1._min_west and e < self.crs1._max_east)
+        n_is_well_boundaried = (n >= self.crs1._min_south and n < self.crs1._max_north)
+        return e_is_well_boundaried and n_is_well_boundaried
+    
+    def _validates_2d_tuple(self, coords):
+        cond1   = self._validates_boundaried_paired_coordinates(coords)
+        cond2   = self._validates_tuple_as_float_container(coords)
+        return cond1 and cond2
+    
+    def _validates_boundaried_paired_coordinates(self, coords):
+        arr_coords  = np.array(coords).transpose()
+        e_coords    = arr_coords[0]
+        n_coords    = arr_coords[1]
+        e_is_well_boundaried = (min(e_coords) >= self.crs1._min_west and max(e_coords) < self.crs1._max_east)
+        n_is_well_boundaried = (min(n_coords) >= self.crs1._min_south and max(n_coords) < self.crs1._max_north)
+        return e_is_well_boundaried and n_is_well_boundaried
+    
+    def _validates_tuple_as_float_container(self, coords):
+        is_always_bidimensional = np.array(coords).shape[self.COL_ARRAY] == self.COORDS_2D
+        is_float                = (np.array(coords).dtype == self.DTYPE_64 or np.array(coords).dtype == self.DTYPE_32)
+        return is_always_bidimensional and is_float
+        
+    
 class EPSG21897_INTL1924_Projector(Projecter):
+
     CRSs = ("EPSG21897", "Hayford International 1924")
     STR_REPRESENTATION = "With %s and %s" % CRSs
 
