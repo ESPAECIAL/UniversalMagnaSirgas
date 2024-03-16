@@ -1,4 +1,5 @@
 *.gpkg
 *.java
 *.pyc
+/.venv
 magna-sirgas/__pycache__/
