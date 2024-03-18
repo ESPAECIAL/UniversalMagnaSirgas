@@ -1,0 +1,84 @@
+"""
+>>> from geographic_crs import IntHayford1924
+>>> from projected_crs import EPSG21897
+>>> from projections import EPSG21897_INTL1924_Projector
+>>> import numpy as np
+>>> many_coords =   ((969767.2, 1060687.6),
+...                 (969315.3, 1061151.8),
+...                 (968964.5, 1061513.4),
+...                 (968638.5, 1061849.5),
+...                 (968262.8, 1062237.1),
+...                 (968262.8, 1062237.1),
+...                 (967910.1, 1062596.9),
+...                 (967560.5, 1062959.8),
+...                 (967209, 1063321.2),
+...                 (966858.1, 1063682.9),
+...                 (966531.6, 1064018),
+...                 (966180.4, 1064379.4),
+...                 (965804.4, 1064766.7),
+...                 (965477.8, 1065101.9),
+...                 (965100.9, 1065488.6),
+...                 (964749.4, 1065849.7),
+...                 (964449.8, 1066160.8),
+...                 (964130.6, 1066490.4),
+...                 (964049, 1066574.4),
+...                 (963698.1, 1066936.1),
+...                 (963346.7, 1067297.8),
+...                 (963020.4, 1067633.3),
+...                 (962644.4, 1068020.9),
+...                 (962293, 1068382.3),
+...                 (961892.1, 1068795.9),
+...                 (961591, 1069105.0),
+...                 (961277.6, 1069428.7))
+>>> coltrans = EPSG21897_INTL1924_Projector(IntHayford1924(), EPSG21897())
+Projection between Projected and Geographic coords
+With EPSG21897 and Hayford International 1924 started
+>>> coltrans.projects_projected_to_geographic(many_coords)
+Successfull
+>>> expected_results = (np.array([-74.35358326, -74.35766068, -74.36082594, -74.36376745,
+...                                -74.36715745, -74.36715745, -74.37033993, -74.3734945 ,
+...                                -74.37666623, -74.37983258, -74.38277879, -74.38594791,
+...                                -74.38934085, -74.39228805, -74.39568918, -74.39886114,
+...                                -74.40156479, -74.40444533, -74.40518171, -74.40834836,
+...                                -74.41151955, -74.41446425, -74.41785752, -74.4210288 ,
+...                                -74.42464686, -74.42736426, -74.4301927 ]),
+...                     np.array([5.14778303, 5.15197892, 5.1552474 , 5.15828536, 5.16178882,
+...                               5.16178882, 5.16504095, 5.16832112, 5.17158769, 5.17485696,
+...                               5.17788578, 5.18115231, 5.18465291, 5.18768258, 5.19117772,
+...                               5.19444145, 5.19725327, 5.20023228, 5.20099148, 5.20426059,
+...                               5.20752968, 5.21056195, 5.21406509, 5.21733141, 5.22106949,
+...                               5.22386309, 5.22678864]))
+>>> actual_results = coltrans.get_results()
+>>> np.allclose(actual_results[0], expected_results[0]) and np.allclose(actual_results[1], expected_results[1])
+True
+>>> wrong_coords =   ((969767.2, 1060687.6),
+...                 (962644.4, 1068020.9),
+...                 (962293, 1068382.3),
+...                 (961892.1, 'b'),
+...                 (961591, 1069105.0),
+...                 (961277.6, 1069428.7))
+>>> coltrans.projects_projected_to_geographic(wrong_coords)
+Error: could not convert string to float: 'b'
+Error: could not convert string to float: 'b'
+1 Error(s): Coordinates are not all and transformable to float
+>>> coltrans.get_results()
+>>> coords   =   (968262.8, 1062237.1)
+>>> coltrans.projects_projected_to_geographic(coords)
+Successfull
+>>> coltrans.get_results()
+(-74.36715744943729, 5.161788815052751)
+>>> coltrans.projects_projected_to_geographic(('a', 'b'))
+Error: could not convert string to float: 'a'
+Error: could not convert string to float: 'a'
+1 Error(s): Coordinates can not be transformed to floats.
+>>> coltrans.projects_projected_to_geographic(('a', 0))
+Error: could not convert string to float: 'a'
+Error: could not convert string to float: 'a'
+1 Error(s): Coordinates can not be transformed to floats.
+>>> coltrans.projects_projected_to_geographic((1, 0))
+2 Warning(s): Coordinates were transform to floats. Coordinates are not all within the crs boundaries.
+Successfull
+>>> coltrans.get_results()
+(-83.05324990043938, -4.389824912250639)
+
+"""

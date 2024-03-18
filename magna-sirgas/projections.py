@@ -1,7 +1,9 @@
 import logging
 
 import numpy as np
+
 from pyproj import Proj
+from abc import ABC, abstractmethod
 
 from data_manipulation import SimpleAdapter
 from projected_crs import Projected
@@ -34,6 +36,7 @@ class Projecter(SimpleAdapter):
     def get_results(self):
         return self.results
 
+    @abstractmethod
     def projects_geographic_to_projected(self, coords):
         self.error_message = []
         self.warning_message = []
@@ -41,6 +44,7 @@ class Projecter(SimpleAdapter):
         self.proj = Proj(self.crs1._crs(), ellps=self.crs2.name_from_proj())
         self._differentiates_input_patterns(coords, False)
 
+    @abstractmethod
     def projects_projected_to_geographic(self, coords):
         self.error_message = []
         self.warning_message = []
@@ -48,6 +52,7 @@ class Projecter(SimpleAdapter):
         self.proj = Proj(self.crs1._crs, ellps=self.crs2.name_from_proj())
         self._differentiates_input_patterns(coords, True)
 
+    @abstractmethod
     def organizes_coordtype_pipeline(self, proj_to_geog: bool):
         if (
             isinstance(self.crs1, Ellipsoidal)
@@ -62,12 +67,41 @@ class Projecter(SimpleAdapter):
         ):
             self.exchanges_crs()
 
+    @abstractmethod
     def _differentiates_input_patterns(self, coords, inverse):
-        self._matches_single_2d_coords(self, coords, inverse)
+        self._matches_single_2d_coords(coords, inverse)
         if not self._coords_are_single_paired:
-            self._matches_not_single_2d_coords(self, coords, inverse)
-        print("".join(self.error_message))
-        print("".join(self.Warning_message))
+            self._matches_not_single_2d_coords(coords, inverse)
+        self._prints_final_message()
+
+    def _has_messages(self):
+        return self._has_error_message() or self._has_warning_message()
+
+    def _prints_final_message(self):
+        if self._has_warning_message():
+            print(" ".join(self.warning_message).strip())
+        if self._has_error_message():
+            print(" ".join(self.error_message).strip())
+        else:
+            print("Successfull")
+
+    def _has_error_message(self):
+        if len(self.error_message) != 0:
+            self.error_message.insert(0, f"{len(self.error_message)} Error(s):")
+            return True
+        return False
+
+    def _has_warning_message(self):
+        if len(self.warning_message) != 0:
+            self.warning_message.insert(0, f"{len(self.warning_message)} Warning(s):")
+            return True
+        return False
+
+    def _prints_error_message(self):
+        return len(self.error_message) != 0
+
+    def _prints_warning_message(self):
+        return len(self.warning_message) != 0
 
     def _matches_single_2d_coords(self, coords, inverse):
         self._coords_are_single_paired = True
@@ -104,10 +138,6 @@ class Projecter(SimpleAdapter):
                 self.error_message.append(
                     "Coordinates can not be transformed to floats."
                 )
-                if not self._validates_boundaried_single_paired_coords(east, north):
-                    self.warning_message.append(
-                        "Coordinates are not all within the crs boundaries."
-                    )
                 self.results = None
             case _:
                 self._coords_are_single_paired = False
@@ -140,7 +170,7 @@ class Projecter(SimpleAdapter):
                 (east1, north1),
                 *_,
                 (eastn, northn),
-            ) if not self._validates_is_iterable(coords)(coords):
+            ) if not self._validates_is_iterable(coords):
                 self.error_message.append(
                     "The object for the coordinates is not iterable."
                 )
@@ -149,7 +179,7 @@ class Projecter(SimpleAdapter):
                 (east1, north1),
                 *_,
                 (eastn, northn),
-            ) if not self._validates_is_always_2d(coords)(coords):
+            ) if not self._validates_is_always_2d(coords):
                 self.results = None
                 self.error_message.append("Coordinates are not always bidimensional.")
 
@@ -174,20 +204,22 @@ class Projecter(SimpleAdapter):
 
     def _validates_are_transformable_to_float(self, *coords):
         for coord in coords:
-            if self._validates_is_iterable(coords):
-                self._validates_are_transformable_to_float(coord)
-            else:
-                if not self.validates_is_transformable_to_float(coord):
+            if self._validates_is_iterable(coord) and not isinstance(coord, str):
+                if not self._validates_are_transformable_to_float(*coord):
                     return False
+            else:
+                if not self._is_transformable_to_float(coord):
+                    return False
+        return True
 
     def _transforms_single_coords_to_float(self, coords):
         return float(coords[0]), float(coords[1])
 
     def _validates_2d_float_sequence_boundaried_coordinates(self, coords):
-        cond1 = self._validates_is_always_2d(coords)
-        cond2 = self._validates_boundaried_paired_coords(coords)
-        cond3 = self._validates_tuple_as_float_container(coords)
-        return cond1 and cond2 and cond3
+        if self._validates_is_always_2d(coords):
+            if self._validates_tuple_as_float_container(coords):
+                return self._validates_boundaried_paired_coords(coords)
+        return False
 
     def _2d_iterable_to_narray(self, coords):
         coords = np.array(coords).transpose()
@@ -275,70 +307,17 @@ class EPSG21897_INTL1924_Projector(Projecter):
     def __str__(self) -> str:
         return self.STR_REPRESENTATION
 
-    def organizes_coordtype_direction(self, proj_to_geog: bool):
-        super().organizes_coordtype_direction(proj_to_geog)
+    def organizes_coordtype_pipeline(self, proj_to_geog: bool):
+        return super().organizes_coordtype_pipeline(proj_to_geog)
 
-    def _differentiates_input_patterns(self, proj, inverse):
-        super()._differentiates_input_patterns(proj, inverse)
-    
-    def projects_projected_to_geographic(self, coords):
-        
+    def _differentiates_input_patterns(self, coords, inverse):
+        return super()._differentiates_input_patterns(coords, inverse)
 
     def projects_projected_to_geographic(self, coords):
-        """
-        >>> from geographic_crs import IntHayford1924
-        >>> from projected_crs import EPSG21897
-        >>> import numpy as np
-        >>> coords   =   (968262.8, 1062237.1)
-        >>> many_coords =   ((969767.2, 1060687.6),
-        ...                 (969315.3, 1061151.8),
-        ...                 (968964.5, 1061513.4),
-        ...                 (968638.5, 1061849.5),
-        ...                 (968262.8, 1062237.1),
-        ...                 (968262.8, 1062237.1),
-        ...                 (967910.1, 1062596.9),
-        ...                 (967560.5, 1062959.8),
-        ...                 (967209, 1063321.2),
-        ...                 (966858.1, 1063682.9),
-        ...                 (966531.6, 1064018),
-        ...                 (966180.4, 1064379.4),
-        ...                 (965804.4, 1064766.7),
-        ...                 (965477.8, 1065101.9),
-        ...                 (965100.9, 1065488.6),
-        ...                 (964749.4, 1065849.7),
-        ...                 (964449.8, 1066160.8),
-        ...                 (964130.6, 1066490.4),
-        ...                 (964049, 1066574.4),
-        ...                 (963698.1, 1066936.1),
-        ...                 (963346.7, 1067297.8),
-        ...                 (963020.4, 1067633.3),
-        ...                 (962644.4, 1068020.9),
-        ...                 (962293, 1068382.3),
-        ...                 (961892.1, 1068795.9),
-        ...                 (961591, 1069105.0),
-        ...                 (961277.6, 1069428.7))
-        >>> coltrans = EPSG21897_INTL1924_Projector(IntHayford1924(), EPSG21897())
-        Projection between Projected and Geographic coords
-        With EPSG21897 and Hayford International 1924 started
-        >>> coltrans.projects_projected_to_geographic(many_coords)
-        >>> print(coltrans.get_results())
-        ((-74.35358325591312, -74.35766067985358, -74.36082593598195, -74.36376745189135, -74.36715744943729, -74.36715744943729, -74.37033993174022, -74.37349450015495, -74.3766662311776, -74.37983258452327, -74.38277878699914, -74.38594790763798, -74.38934085364151, -74.39228804928436, -74.39568917997471, -74.39886113795443, -74.40156478805952, -74.40444533036123, -74.40518171275346, -74.40834835991517, -74.41151954964633, -74.41446425347509, -74.41785751628629, -74.42102880304505, -74.42464685994848, -74.42736425877526, -74.43019269941865), (5.147783032413364, 5.151978921584383, 5.155247396947399, 5.158285363956912, 5.161788815052751, 5.161788815052751, 5.165040952014809, 5.16832111624766, 5.171587690516878, 5.174856962089231, 5.177885784023651, 5.181152306618579, 5.184652908484098, 5.187682583685979, 5.191177716947414, 5.194441451327794, 5.197253270266719, 5.200232275194031, 5.200991484034273, 5.204260592031021, 5.207529679342289, 5.210561949822666, 5.214065088356036, 5.217331407607902, 5.221069491958975, 5.223863090340863, 5.226788636343087))
-        >>> coltrans.projects_projected_to_geographic(coords)
-        >>> print(coltrans.get_results())
-        (-74.36715744943729, 5.161788815052751)
-        >>> coltrans.projects_projected_to_geographic(('a', 'b'))
-        Invalid coords: ('a', 'b'). They should be in a tuple of floats (x, y) or in a type readable by numpy.array() and within the range
-        >>> coltrans.projects_projected_to_geographic(('a', 0))
-        Invalid coords: ('a', 0). They should be in a tuple of floats (x, y) or in a type readable by numpy.array() and within the range
-        >>> coltrans.projects_projected_to_geographic((1, 0))
-        Invalid coords: (1, 0). They should be in a tuple of floats (x, y) or in a type readable by numpy.array() and within the range
-        >>> print(coltrans.get_results())
-        None
-        """
-        super().projects_projected_to_geographic(coords)
+        return super().projects_projected_to_geographic(coords)
 
     def projects_geographic_to_projected(self, coords):
-        super().projects_geographic_to_projected(coords)
+        return super().projects_geographic_to_projected(coords)
 
     def get_results(self):
         return super().get_results()
@@ -347,5 +326,5 @@ class EPSG21897_INTL1924_Projector(Projecter):
 if __name__ == "__main__":
     import doctest
 
-    doctest.testmod()
+    doctest.testfile("projections_tests.txt")
     # print("%.7f, %.7f" % wgs84)  # Adjust the format specifier accordingly
