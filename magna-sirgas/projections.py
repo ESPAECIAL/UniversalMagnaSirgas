@@ -3,7 +3,7 @@ import logging
 import numpy as np
 
 from pyproj import Proj
-from abc import ABC, abstractmethod
+from abc import abstractmethod
 
 from data_manipulation import SimpleAdapter
 from projected_crs import Projected
@@ -18,20 +18,22 @@ class Projecter(SimpleAdapter):
         if self._validates_coord_types(crs1, crs2):
             self.crs1 = crs1
             self.crs2 = crs2
+            print("Projection between %s and %s coords" % self.COORD_TYPES)
         else:
-            self._log_origin_target_arenot_projectable(crs1, crs2)
-        print("Projection between %s and %s coords" % self.COORD_TYPES)
+            return logging.error(
+                f"The crs' {crs1, crs2} do not create a pipeline to project"
+            )
 
     def _validates_coord_types(self, crs1, crs2):
-        if isinstance(crs1, Ellipsoidal) and isinstance(crs2, Projected):
-            return True
-        if isinstance(crs1, Projected) and isinstance(crs2, Ellipsoidal):
-            return True
-
-    def _log_origin_target_arenot_projectable(self, crs1, crs2):
-        return logging.error(
-            f"The crs' {crs1, crs2} do not create a pipeline to project"
-        )
+        if super()._validates_coord_types(crs1, crs2):
+            return (
+                (isinstance(crs1, Ellipsoidal) and isinstance(crs2, Projected))
+                or isinstance(crs1, Projected)
+                and isinstance(crs2, Ellipsoidal)
+            )
+        else:
+            self._log_origin_target_arenot_projectable(crs1, crs2)
+            return False
 
     def get_results(self):
         return self.results
@@ -41,7 +43,7 @@ class Projecter(SimpleAdapter):
         self.error_message = []
         self.warning_message = []
         self.organizes_coordtype_pipeline(proj_to_geog=False)
-        self.proj = Proj(self.crs1._crs(), ellps=self.crs2.name_from_proj())
+        self.projection = Proj(self.crs2._crs, ellps=self.crs1.name_from_proj())
         self._differentiates_input_patterns(coords, False)
 
     @abstractmethod
@@ -49,7 +51,7 @@ class Projecter(SimpleAdapter):
         self.error_message = []
         self.warning_message = []
         self.organizes_coordtype_pipeline(proj_to_geog=True)
-        self.proj = Proj(self.crs1._crs, ellps=self.crs2.name_from_proj())
+        self.projection = Proj(self.crs1._crs, ellps=self.crs2.name_from_proj())
         self._differentiates_input_patterns(coords, True)
 
     @abstractmethod
@@ -110,7 +112,7 @@ class Projecter(SimpleAdapter):
                 float(east),
                 float(north),
             ) if self._validates_boundaried_single_paired_coords(east, north):
-                self.results = self.proj(east, north, inverse=inverse)
+                self.results = self.projection(east, north, inverse=inverse)
 
             case (
                 float(east),
@@ -119,7 +121,7 @@ class Projecter(SimpleAdapter):
                 self.Warning_message.append(
                     "Coordinates are not all within the crs boundaries."
                 )
-                self.results = self.proj(east, north, inverse=inverse)
+                self.results = self.projection(east, north, inverse=inverse)
 
             case (east, north) if self._validates_are_transformable_to_float(
                 east, north
@@ -130,7 +132,7 @@ class Projecter(SimpleAdapter):
                     self.warning_message.append(
                         "Coordinates are not all within the crs boundaries."
                     )
-                self.results = self.proj(float_e, float_n, inverse=inverse)
+                self.results = self.projection(float_e, float_n, inverse=inverse)
 
             case (east, north) if not self._validates_are_transformable_to_float(
                 east, north
@@ -151,7 +153,7 @@ class Projecter(SimpleAdapter):
                 (eastn, northn),
             ) if self._validates_2d_float_sequence_boundaried_coordinates(coords):
                 narrays_coords = self._2d_iterable_to_narray(coords)
-                self.results = self.proj(*narrays_coords, inverse=inverse)
+                self.results = self.projection(*narrays_coords, inverse=inverse)
 
             case (
                 (east1, north1),
@@ -164,7 +166,7 @@ class Projecter(SimpleAdapter):
                     "Coordinatess are not all within the crs boundaries.",
                 ]
                 narrays_coords = self._2d_iterable_to_narray(coords)
-                self.results = self.proj(*narrays_coords, inverse=inverse)
+                self.results = self.projection(*narrays_coords, inverse=inverse)
 
             case (
                 (east1, north1),
@@ -280,20 +282,6 @@ class Projecter(SimpleAdapter):
             print(f"Error: {e}")
         return _is_transformable
 
-    # def _shows_not_transformable_float_from_single_coords(self, coords):
-    #     not_float_transformable = []
-    #     for coord in coords:
-    #         if self._is_transformable_to_float(coord):
-    #             not_float_transformable.append(coord)
-    #     return tuple(not_float_transformable)
-
-    # def _shows_not_float_coords_from_2d_tuple(self, coords):
-    #     not_float_transformable = []
-    #     for coord, row in enumerate(coords):
-    #         if not self._validates_are_transformable_to_float(coord):
-    #             not_float_transformable.append((row, coords))
-    #     return not_float_transformable
-
 
 class EPSG21897_INTL1924_Projector(Projecter):
 
@@ -327,4 +315,5 @@ if __name__ == "__main__":
     import doctest
 
     doctest.testfile("projections_tests.txt")
+
     # print("%.7f, %.7f" % wgs84)  # Adjust the format specifier accordingly

@@ -80,5 +80,21 @@ Error: could not convert string to float: 'a'
 Successfull
 >>> coltrans.get_results()
 (-83.05324990043938, -4.389824912250639)
+>>> many_coords = (
+...        np.array([-74.35358326, -74.35766068, -74.36082594, -74.36376745]),
+...        np.array([5.14778303, 5.15197892, 5.1552474, 5.15828536]),
+...    )
+>>> paired_tuples = tuple(zip(many_coords[0], many_coords[1]))
+>>> coltrans.projects_geographic_to_projected(paired_tuples)
+Successfull
+>>> actual_results = coltrans.get_results()
+>>> expected_results = (
+...     np.array([969767.2, 969315.3, 968964.5, 968638.5]),
+...     np.array([1060687.6, 1061151.8, 1061513.4, 1061849.5]),
+... )
+>>> np.allclose(actual_results[0], expected_results[0]) and np.allclose(
+...     actual_results[1], expected_results[1]
+... )
+True
 
 """
