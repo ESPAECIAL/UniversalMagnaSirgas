@@ -1,5 +1,5 @@
 """
->>> from projections import EPSG21897_INTL1924_P
+>>> from transformations import WGS84_INTLHAYFORD1924_T
 >>> import numpy as np
 >>> many_coords =   ((969767.2, 1060687.6),
 ...                 (969315.3, 1061151.8),

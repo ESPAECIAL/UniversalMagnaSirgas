@@ -52,8 +52,8 @@ class IntHayford1924(Ellipsoidal):
         return f"IntHayford1924 is {IntHayford1924._crs_type} coming from PROJ ({IntHayford1924._crs}) with limits in longitude ({self.max_east(), self.min_west()} and in latitude ({self.max_north(), self.min_south()}))"
 
 
-class IntHayford1924(Ellipsoidal):
-    _crs = CRS.from_user_input("+proj=longlat +ellps=wgs84")
+class WGS1984(Ellipsoidal):
+    _crs = CRS.from_user_input("+proj=longlat +ellps=WGS84")
     _proj_name = "wgs84"
 
     def __init__(self):
