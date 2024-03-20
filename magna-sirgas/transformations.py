@@ -3,7 +3,7 @@ import logging
 from pyproj import CRS, Transformer
 
 from data_manipulation import SimpleAdapter
-from geographic_crs import Ellipsoidal
+from geographic_crs import Ellipsoidal, IntHayford1924, WGS1984
 
 
 class Transformer(SimpleAdapter):
@@ -25,15 +25,44 @@ class Transformer(SimpleAdapter):
                 return True
         return False
 
-    def transforms(self, coords):
+    def transforms_straightforwardly(self, coords):
         self.error_message = []
         self.warning_message = []
-        self.transformation = Transformer.from_crs(self.crs1._crs, self.crs2._crs, always_xy=True)
-        self._differentiates_input_patterns(coords, False)
-    
-    def get_results(self):
+        self.transformation = Transformer.from_crs(
+            self.crs1._crs, self.crs2._crs, always_xy=True
+        )
+        self._differentiates_input_patterns(
+            coords, functional="elipsoidal-transformation"
+        )
+
+    def transforms_inversely(self, coords):
+        self.error_message = []
+        self.warning_message = []
+        self.transformation = Transformer.from_crs(
+            self.crs2._crs, self.crs1._crs, always_xy=True
+        )
+        self._differentiates_input_patterns(
+            coords, functional="elipsoidal-transformation"
+        )
 
 
+class WGS84_INTLHAYFORD1924_T(Transformer):
+    CRSs = (
+        "WGS84 (EPSG:4326)",
+        "Hayford International 1909 (EPSG:7022)",
+    )
 
-# intl = CRS.from_user_input("+proj=longlat +ellps=intl")
-# wgs84 = CRS.from_user_input("+proj=longlat +ellps=WGS84")
+    STR_REPRESENTATION = "With %s and %s" % CRSs
+
+    def __init__(self):
+        super().__init__(WGS1984(), IntHayford1924())
+        print(self.STR_REPRESENTATION + " started")
+
+    def __str__(self) -> str:
+        return self.STR_REPRESENTATION
+
+
+if __name__ == "__main__":
+    import doctest
+
+    doctest.testfile("transformations_tests.txt")
