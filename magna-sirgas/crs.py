@@ -1,20 +1,26 @@
-from abc import ABC, abstractclassmethod
+from abc import ABC, abstractmethod
+
 
 class MagnaSirgasCRS(ABC):
-    @abstractclassmethod
+    @abstractmethod
     def crs(self):
         pass
-    @abstractclassmethod
+
+    @abstractmethod
     def max_north(self):
         pass
-    @abstractclassmethod
+
+    @abstractmethod
     def min_south(self):
         pass
-    @abstractclassmethod
+
+    @abstractmethod
     def max_east(self):
         pass
-    @abstractclassmethod
+
+    @abstractmethod
     def min_west(self):
         pass
+
     def __repr__(self) -> str:
         return f"MagnaSirgasCRS()"

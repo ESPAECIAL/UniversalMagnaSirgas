@@ -2,8 +2,8 @@ import logging
 
 import numpy as np
 
-from abc import ABC, abstractclassmethod, abstractmethod
 from crs import MagnaSirgasCRS
+from abc import ABC, abstractmethod
 
 logging.basicConfig(level=logging.DEBUG)
 

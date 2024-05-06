@@ -1,6 +1,6 @@
 import logging
 
-from pyproj import CRS, Transformer
+from pyproj import Transformer
 
 from data_manipulation import SimpleAdapter
 from geographic_crs import Ellipsoidal, IntHayford1924, WGS1984
