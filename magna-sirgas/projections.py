@@ -1,9 +1,6 @@
 import logging
 
-import numpy as np
-
 from pyproj import Proj
-from abc import abstractmethod
 
 from data_manipulation import SimpleAdapter
 from projected_crs import Projected, EPSG21897

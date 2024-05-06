@@ -84,7 +84,7 @@ class WGS1984(Ellipsoidal):
         return self._crs == __value._crs
 
     def __repr__(self):
-        return f"IntHayford()"
+        return f"WGS1984()"
 
     def __str__(self) -> str:
-        return f"IntHayford1924 is {IntHayford1924._crs_type} coming from PROJ ({IntHayford1924._crs}) with limits in longitude ({self.max_east(), self.min_west()} and in latitude ({self.max_north(), self.min_south()}))"
+        return f"WGS1984 is {WGS1984._crs_type} coming from PROJ ({WGS1984._crs}) with limits in longitude ({self.max_east(), self.min_west()} and in latitude ({self.max_north(), self.min_south()}))"
