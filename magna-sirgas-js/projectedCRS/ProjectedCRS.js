@@ -1,12 +1,11 @@
 const MagnaSirgasCRS = require('../MagnaSirgasCRS');
 
-class Ellipsoidal extends MagnaSirgasCRS {
+class ProjectedCRS extends MagnaSirgasCRS {
     constructor() {
         super();
     }
-
-    nameFromPrj() {
-        // Implementation
+    crsType() {
+        return 'Projected';
     }
 
     crs() {
@@ -14,23 +13,19 @@ class Ellipsoidal extends MagnaSirgasCRS {
     }
 
     maxNorth() {
-        return 90.0;
+        // Implementation
     }
 
-    minSouth () {
-        return -90.0;
+    minSouth() {
+        // Implementation
     }
 
     maxEast() {
-        return 180.0;
+        // Implementation
     }
 
     minWest() {
-        return -180.0;
-    }
-
-    crsType() {
-        return 'Ellipsoidal';
+        // Implementation
     }
 
     hashCode() {
@@ -38,18 +33,10 @@ class Ellipsoidal extends MagnaSirgasCRS {
         return crypto.createHash('md5').update(crsString).digest('hex');
     }
 
-    nameFromProj() {
-        // Implementation
-    }
-
     equals(value) {
         return this.crs() === value;
     }
 
-    toString() {
-        // Implementation
-    }
-
 }
 
-module.exports = Ellipsoidal;
+module.exports = ProjectedCRS;

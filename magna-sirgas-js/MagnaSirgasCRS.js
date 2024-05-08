@@ -1,29 +1,32 @@
 class MagnaSirgasCRS {
 
-    constructor(type) {
+    constructor() {
         if (this.constructor === MagnaSirgasCRS) {
             throw new Error("You can't instantiate an abstract class");
         }
-        this.type = type;
+    }
+
+    type() {
+        return 'MagnaSirgasCRS';
     }
 
     crs() {
         throw new Error("Abstract method 'crs' must be implemented.");
     }
 
-    max_north() {
+    maxNorth() {
         throw new Error("Abstract method 'max_north' must be implemented.");
     }
 
-    min_south() {
+    minSouth() {
         throw new Error("Abstract method 'min_south' must be implemented.");
     }
 
-    max_east() {
+    maxEast() {
         throw new Error("Abstract method 'max_east' must be implemented.");
     }
 
-    min_west() {
+    minWest() {
         throw new Error("Abstract method 'min_west' must be implemented.");
     };
 
