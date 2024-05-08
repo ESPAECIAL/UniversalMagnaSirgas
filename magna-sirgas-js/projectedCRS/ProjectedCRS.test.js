@@ -1,10 +1,10 @@
-const EllipsoidalCRS = require('./EllipsoidalCRS');
+const ProjectedCRS = require('./ProjectedCRS');
 
-describe('EllipsoidalCRS', () => {
+describe('ProjectedCRS', () => {
     it('should not throw an error when instantiated directly', () => {
         let errorCaught;
         try {
-            new EllipsoidalCRS();
+            new ProjectedCRS();
             errorCaught = false;
         } catch (error) {
             errorCaught = true;

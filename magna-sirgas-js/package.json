@@ -2,7 +2,24 @@
   "scripts": {
     "test": "jest"
   },
+  "name": "magna-sirgas",
+  "version": "1.0.0",
+  "description": "Universal Magna Sirgas JS API",
+  "main": "app.js",
+  "author": "depicted-candela",
+  "license": "ISC",
+  "keywords": [
+    "Universal",
+    "Magna",
+    "Sirgas",
+    "JS",
+    "API"
+  ],
   "dependencies": {
-    "proj4": "^2.11.0"
+    "@stdlib/ndarray-array": "^0.2.1",
+    "jest": "^29.7.0",
+    "proj4": "^2.11.0",
+    "proj4-list": "^1.0.2",
+    "winston": "^3.13.0"
   }
 }
