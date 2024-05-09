@@ -38,7 +38,7 @@ class SimpleAdapter {
     }
 
     matchesSingle2dCoords(coords, functional = "transformation") {
-        this._coordsAreSinglePaired = true;
+        this.coordsAreSinglePaired = true;
         coords.forEach(coord => {
             switch (true) {
                 case (
@@ -89,7 +89,7 @@ class SimpleAdapter {
     matchesNotSingle2dCoords(coords, functional = "transformation") {
         switch (true) {
             case this.validates2dFloatSequenceBoundariedCoordinates(coords):
-                const narrays_coords = this.2dIterableToNarray(coords);
+                const narrays_coords = this._2dIterableToNarray(coords);
                 this.segmentatesFunctionals(...narrays_coords, { functional });
                 break;
 
@@ -99,7 +99,7 @@ class SimpleAdapter {
                     "Coordinates were not all floats, but transformed to floats.",
                     "Coordinates are not all within the crs boundaries."
                 );
-                const narraysCoords = this.2dIterableToNarray(transformedCoords);
+                const narraysCoords = this._2dIterableToNarray(transformedCoords);
                 this.segmentatesFunctionals(...narraysCoords, { functional });
                 break;
 
@@ -128,7 +128,7 @@ class SimpleAdapter {
         if (this.hasWarningMessage()) {
             console.log(this.warningMessage.join(" ").trim());
         }
-        if (this._has_errorMessage()) {
+        if (this.hasErrorMessage()) {
             console.error(this.errorMessage.join(" ").trim());
         } else {
             console.log("Successful");
@@ -140,31 +140,115 @@ class SimpleAdapter {
         const n_is_well_boundaried = n >= this.crs1._min_south && n < this.crs1._max_north;
         return e_is_well_boundaried && n_is_well_boundaried;
     }
-    
-    // Define abstract method (if needed)
-    validatesCoordTypes(crs1, crs2) {
-        return this.areCrsMagnasirgasCRSSubclasses(crs1, crs2);
+
+    segmentatesFunctionals(...coords) {
+        const functional = 'transformation'; // Default value for functional parameter
+        if (functional === this.PROJECTION) {
+            this.results = this.projection(...coords, inverse = false);
+        } else if (functional === this.INVERSE_PROJECTION) {
+            this.results = this.projection(...coords, inverse = true);
+        } else if (functional === this.ELIP_TRANSFORMATION) {
+            this.results = this.transformation(...coords);
+        } else if (functional === this.INVERSE_ELIP_TRANSFORMATION) {
+            console.log(`Functional for ${this.INVERSE_ELIP_TRANSFORMATION} not available`);
+        } else {
+            console.log(`Functional ${functional} unknown`);
+        }
     }
 
-    areCrsMagnasirgasCRSSubclasses(self, ...many_crs) {
-        for (const crs of many_crs) {
-            if (!this.isMagnaSirgasCRSSubclass(crs)) {
-                return false;
+    validatesAreTransformableToFloat(...coords) {
+        for (const coord of coords) {
+            if (Array.isArray(coord) && typeof coord !== 'string') {
+                if (!this.validatesAreTransformableToFloat(...coord)) {
+                    return false;
+                }
+            } else {
+                if (!this.isTransformableToFloat(coord)) {
+                    return false;
+                }
             }
         }
         return true;
     }
 
-    isMagnaSirgasCRSSubclass(self, crs) {
-        return crs instanceof MagnaSirgasCRS;
+    validates2dFloatSequenceBoundariedCoordinates(coords) {
+        if (this.validatesIsAlways2d(coords)) {
+            if (this.validatesTupleAsFloatContainer(coords)) {
+                return this.validatesBoundariedPairedCoords(coords);
+            }
+        }
+        return false;
     }
 
-    // Define other methods
-    get_results() {
-        return this.results;
+    _2dIterableToNarray(coords) {
+        // Convert coordinates to ndarray and transpose
+        const coordsArray = ndarray(coords);
+        const transposedCoords = coordsArray.transpose(1, 0);
+        // Extract and return the first and second row
+        return [transposedCoords.get(0), transposedCoords.get(1)];
     }
 
-    // More methods...
+    validates2dFloatTransformable(coords) {
+        const cond1 = this.validatesIsAlways2d(coords);
+        const cond2 = this.validatesAreTransformableToFloat(coords);
+        return cond1 && cond2;
+    }
+
+    transformsSingleCoordsToFloat(coords) {
+        return [parseFloat(coords[0]), parseFloat(coords[1])];
+    }
+
+    transforms2dTupleToFloat(coords) {
+        const floatCoords = [];
+        for (const coord of coords) {
+            floatCoords.push(this.transformsSingleCoordsToFloat(coord));
+        }
+        return floatCoords;
+    }
+
+    validatesIsIterable(object) {
+        try {
+            const iterator = object[Symbol.iterator]();
+            return typeof iterator === 'object' && typeof iterator.next === 'function';
+        } catch (error) {
+            return false;
+        }
+    }
+
+    validatesIsAlways2d(coords) {
+        const cond1 = this.validatesIsIterable(coords);
+        const cond2 = Array.isArray(coords) && coords.every(coord => Array.isArray(coord));
+        const cond3 = coords.length > 0 && coords[0].length === 2;
+        return cond1 && cond2 && cond3;
+    }
+
+    hasWarningMessage() {
+        if (this.warningMessage.length !== 0) {
+            this.warningMessage.unshift(`${this.warningMessage.length} Warning(s):`);
+            return true;
+        }
+        return false;
+    }
+
+    hasErrorMessage() {
+        if (this.errorMessage.length !== 0) {
+            this.errorMessage.unshift(`${this.errorMessage.length} Error(s):`);
+            return true;
+        }
+        return false;
+    }
+
+    isTransformableToFloat(coord) {
+        let isTransformable = false;
+        try {
+            parseFloat(coord);
+            isTransformable = true;
+        } catch (error) {
+            console.log(`Error: ${error}`);
+        }
+        return isTransformable;
+    }
+
 }
 
 module.exports = SimpleAdapter;
