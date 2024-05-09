@@ -25,7 +25,7 @@ class SimpleAdapter(ABC):
 
     @abstractmethod
     def _validates_coord_types(self, crs1, crs2):
-        return True if self._are_crs_magnasirgascrs_subclasses(crs1, crs2) else False
+        return self._are_crs_magnasirgascrs_subclasses(crs1, crs2)
 
     def get_results(self):
         return self.results
@@ -83,7 +83,7 @@ class SimpleAdapter(ABC):
                 float(east),
                 float(north),
             ) if not self._validates_boundaried_single_paired_coords(east, north):
-                self.Warning_message.append(
+                self.warning_message.append(
                     "Coordinates are not all within the crs boundaries."
                 )
                 self._segmentates_functionals(east, north, functional=functional)
@@ -175,7 +175,7 @@ class SimpleAdapter(ABC):
         elif functional == self.INVERSE_PROJECTION:
             self.results = self.projection(*coords, inverse=True)
         elif functional == self.ELIP_TRANSFORMATION:
-            self.results = self.transformation(*coords)
+            self.results = self.transformation.transform(*coords)
         elif functional == self.INVERSE_ELIP_TRANSFORMATION:
             print("A")
 

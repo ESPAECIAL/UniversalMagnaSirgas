@@ -1,37 +1,37 @@
 """
 >>> from transformations import WGS84_INTLHAYFORD1924_T
 >>> import numpy as np
->>> many_coords =   ((969767.2, 1060687.6),
-...                 (969315.3, 1061151.8),
-...                 (968964.5, 1061513.4),
-...                 (968638.5, 1061849.5),
-...                 (968262.8, 1062237.1),
-...                 (968262.8, 1062237.1),
-...                 (967910.1, 1062596.9),
-...                 (967560.5, 1062959.8),
-...                 (967209, 1063321.2),
-...                 (966858.1, 1063682.9),
-...                 (966531.6, 1064018),
-...                 (966180.4, 1064379.4),
-...                 (965804.4, 1064766.7),
-...                 (965477.8, 1065101.9),
-...                 (965100.9, 1065488.6),
-...                 (964749.4, 1065849.7),
-...                 (964449.8, 1066160.8),
-...                 (964130.6, 1066490.4),
-...                 (964049, 1066574.4),
-...                 (963698.1, 1066936.1),
-...                 (963346.7, 1067297.8),
-...                 (963020.4, 1067633.3),
-...                 (962644.4, 1068020.9),
-...                 (962293, 1068382.3),
-...                 (961892.1, 1068795.9),
-...                 (961591, 1069105.0),
-...                 (961277.6, 1069428.7))
->>> coltrans = EPSG21897_INTL1924_P()
-Projection between Projected and Geographic coords
-With Bogota 1975 / Colombia Bogota zone (EPSG:21897) and Hayford International 1909 (EPSG:7022) started
->>> coltrans.projects_projected_to_geographic(many_coords)
+>>> many_coords = ((-73.5202859901285, 4.31183923722449),
+... (-73.5342336871334, 4.32545320232846),
+... (-73.5300551844889, 4.32136379306369),
+... (-73.5268002602801, 4.31818925438829),
+... (-73.5237748969838, 4.31523913142137),
+... (-73.5202859901285, 4.31183923722449),
+... (-73.5170473737759, 4.30864749739037),
+... (-73.5137808401659, 4.30548375837783),
+... (-73.5105278577911, 4.30230283777004),
+... (-73.5072721961919, 4.29912733012698),
+... (-73.5042559948757, 4.29617263331857),
+... (-73.5010030897037, 4.2929943946166),
+... (-73.497517090113, 4.28959171024148),
+... (-73.4945000639571, 4.28663607933554),
+... (-73.4910195327833, 4.28322523842107),
+... (-73.4877694417217, 4.28004424656242),
+... (-73.484969376142, 4.27733290599341),
+... (-73.4820028348243, 4.27444419260606),
+... (-73.481246804136, 4.2737057249682),
+... (-73.4779913852943, 4.27053012339533),
+... (-73.4747359968765, 4.26734999024188),
+... (-73.4717164414243, 4.26439700287916),
+... (-73.468227999221, 4.26099421664693),
+... (-73.4649753934806, 4.25781405499885),
+... (-73.4612530107311, 4.25418589777674),
+... (-73.4584639517796, 4.25146093026097),
+... (-73.4555579130653, 4.2486246368716))
+>>> coltrans = WGS84_INTLHAYFORD1924_T()
+Transformation between Geographic and Geographic coords
+With WGS84 (EPSG:4326) and Hayford International 1909 (EPSG:7022) started
+>>> coltrans.transforms_straightforwardly(many_coords)
 Successfull
 >>> expected_results = (np.array([-74.35358326, -74.35766068, -74.36082594, -74.36376745,
 ...                                -74.36715745, -74.36715745, -74.37033993, -74.3734945 ,
@@ -47,6 +47,8 @@ Successfull
 ...                               5.20752968, 5.21056195, 5.21406509, 5.21733141, 5.22106949,
 ...                               5.22386309, 5.22678864]))
 >>> actual_results = coltrans.get_results()
+>>> print(actual_results)
+>>> print(expected_results)
 >>> np.allclose(actual_results[0], expected_results[0]) and np.allclose(actual_results[1], expected_results[1])
 True
 >>> wrong_coords =   ((969767.2, 1060687.6),
@@ -55,35 +57,35 @@ True
 ...                 (961892.1, 'b'),
 ...                 (961591, 1069105.0),
 ...                 (961277.6, 1069428.7))
->>> coltrans.projects_projected_to_geographic(wrong_coords)
+>>> coltrans.transforms_straightforwardly(wrong_coords)
 Error: could not convert string to float: 'b'
 Error: could not convert string to float: 'b'
 1 Error(s): Coordinates are not all and transformable to float
 >>> coltrans.get_results()
 >>> coords   =   (968262.8, 1062237.1)
->>> coltrans.projects_projected_to_geographic(coords)
+>>> coltrans.transforms_straightforwardly(coords)
 Successfull
->>> coltrans.get_results()
+>>> print(coltrans.get_results())
 (-74.36715744943729, 5.161788815052751)
->>> coltrans.projects_projected_to_geographic(('a', 'b'))
+>>> coltrans.transforms_straightforwardly(('a', 'b'))
 Error: could not convert string to float: 'a'
 Error: could not convert string to float: 'a'
 1 Error(s): Coordinates can not be transformed to floats.
->>> coltrans.projects_projected_to_geographic(('a', 0))
+>>> coltrans.transforms_straightforwardly(('a', 0))
 Error: could not convert string to float: 'a'
 Error: could not convert string to float: 'a'
 1 Error(s): Coordinates can not be transformed to floats.
->>> coltrans.projects_projected_to_geographic((1, 0))
-2 Warning(s): Coordinates were transform to floats. Coordinates are not all within the crs boundaries.
+>>> coltrans.transforms_straightforwardly((1, 0))
+1 Warning(s): Coordinates were transform to floats.
 Successfull
->>> coltrans.get_results()
+>>> print(coltrans.get_results())
 (-83.05324990043938, -4.389824912250639)
 >>> many_coords = (
 ...        np.array([-74.35358326, -74.35766068, -74.36082594, -74.36376745]),
 ...        np.array([5.14778303, 5.15197892, 5.1552474, 5.15828536]),
 ...    )
 >>> paired_tuples = tuple(zip(many_coords[0], many_coords[1]))
->>> coltrans.projects_geographic_to_projected(paired_tuples)
+>>> coltrans.transforms_straightforwardly(paired_tuples)
 Successfull
 >>> actual_results = coltrans.get_results()
 >>> expected_results = (
